@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import com.Duoc.TecnoApp.example.TecnoApp.model.*
 import com.Duoc.TecnoApp.example.TecnoApp.repository.RepositorioSolicitudes
 
@@ -12,6 +14,23 @@ class TecMundoViewModel : ViewModel() {
     private val repositorio = RepositorioSolicitudes()
     private val historial = mutableStateListOf<Pantalla>()
     val solicitudes get() = repositorio.solicitudes
+
+    var mensajeErrorXano by mutableStateOf<String?>(null)
+        private set
+    var guardandoSolicitud by mutableStateOf(false)
+        private set
+
+    fun cerrarErrorXano() { mensajeErrorXano = null }
+
+    fun cargarSolicitudesXano() {
+        viewModelScope.launch {
+            try {
+                repositorio.cargarDesdeXano()
+            } catch (error: Exception) {
+                mensajeErrorXano = error.message ?: "Error al consultar la base de datos Xano"
+            }
+        }
+    }
 
     var pantallaActual by mutableStateOf(Pantalla.ACCESO)
         private set
@@ -58,6 +77,7 @@ class TecMundoViewModel : ViewModel() {
     fun irAInicio() {
         historial.clear()
         pantallaActual = inicioSegunRol()
+        if (sesionIniciada) cargarSolicitudesXano()
     }
 
     // La autenticación es demostrativa: no se envían contraseñas a un servidor.
@@ -93,14 +113,27 @@ class TecMundoViewModel : ViewModel() {
         obstaculos: List<String>,
         comentarios: String,
         fotos: List<String>
-    ): Boolean {
-        if (hectareas <= 0 || hectareas > 100000) return false
-        val nuevoId = (solicitudes.maxOfOrNull { it.id } ?: 0) + 1
-        repositorio.agregar(
-            Solicitud(nuevoId, tipo, hectareas, tieneAgua, horario, obstaculos, comentarios, fotos)
-        )
-        irAInicio()
-        return true
+    ) {
+        if (hectareas !in 1..100000 || guardandoSolicitud) return
+        viewModelScope.launch {
+            guardandoSolicitud = true
+            mensajeErrorXano = null
+            try {
+                repositorio.publicarEnXano(
+                    Solicitud(
+                        id = 0, tipoProducto = tipo, superficieHectareas = hectareas,
+                        tieneAgua = tieneAgua, horario = horario,
+                        obstaculos = obstaculos, comentarios = comentarios, fotos = fotos
+                    )
+                )
+                historial.clear()
+                pantallaActual = Pantalla.INICIO_PRODUCTOR
+            } catch (error: Exception) {
+                mensajeErrorXano = error.message ?: "No se pudo guardar en Xano"
+            } finally {
+                guardandoSolicitud = false
+            }
+        }
     }
 
     // Una nueva oferta actualiza la solicitud y su estado en el repositorio.

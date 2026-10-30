@@ -20,6 +20,17 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
         vistaModelo.volver()
     }
 
+    vistaModelo.mensajeErrorXano?.let { mensaje ->
+        AlertDialog(
+            onDismissRequest = vistaModelo::cerrarErrorXano,
+            title = { Text("Error de conexión con Xano") },
+            text = { Text(mensaje) },
+            confirmButton = {
+                TextButton(onClick = vistaModelo::cerrarErrorXano) { Text("Entendido") }
+            }
+        )
+    }
+
     if (mostrarInfo) {
         AlertDialog(
             onDismissRequest = { mostrarInfo = false },
