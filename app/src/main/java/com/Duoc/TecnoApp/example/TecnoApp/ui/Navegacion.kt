@@ -23,7 +23,13 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
     vistaModelo.mensajeErrorXano?.let { mensaje ->
         AlertDialog(
             onDismissRequest = vistaModelo::cerrarErrorXano,
-            title = { Text("Error de conexión con Xano") },
+            title = {
+                Text(
+                    if (mensaje.startsWith("Xano respondió correctamente al POST"))
+                        "Solicitud enviada; falta actualizar la lista"
+                    else "Problema al comunicarse con Xano"
+                )
+            },
             text = { Text(mensaje) },
             confirmButton = {
                 TextButton(onClick = vistaModelo::cerrarErrorXano) { Text("Entendido") }

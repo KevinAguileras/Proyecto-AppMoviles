@@ -1,6 +1,8 @@
 package com.Duoc.TecnoApp.example.TecnoApp.repository
 
 import androidx.compose.runtime.mutableStateListOf
+import android.util.Log
+import kotlin.math.roundToInt
 import com.Duoc.TecnoApp.example.TecnoApp.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -58,9 +60,27 @@ class RepositorioSolicitudes {
                     ?: throw IllegalStateException("La API no devolvió una lista de solicitudes")
                 else -> throw IllegalStateException("Xano devolvió una respuesta inesperada")
             }
-            (0 until arreglo.length()).map { posicion ->
-                convertirSolicitud(arreglo.getJSONObject(posicion))
+            // Un registro de prueba inválido no debe bloquear las demás solicitudes.
+            val validas = (0 until arreglo.length()).mapNotNull { posicion ->
+                val registro = arreglo.getJSONObject(posicion)
+                try {
+                    convertirSolicitud(registro)
+                } catch (error: Exception) {
+                    Log.w(
+                        "TecMundoXano",
+                        "Se omitió la solicitud ${registro.optInt("id")}: ${error.message}"
+                    )
+                    null
+                }
             }
+            if (validas.isEmpty() && arreglo.length() > 0) {
+                throw IllegalStateException(
+                    "Xano devolvió ${arreglo.length()} registros, pero ninguno tiene " +
+                            "producto, hectáreas y horario válidos. Corrige los datos de prueba " +
+                            "en Xano y vuelve a cargar."
+                )
+            }
+            validas
         }
         solicitudes.clear()
         solicitudes.addAll(nuevas.sortedByDescending { it.id })
@@ -68,16 +88,19 @@ class RepositorioSolicitudes {
 
     // POST /solicitud. Los nombres deben coincidir con los campos de la tabla Xano.
     suspend fun publicarEnXano(solicitud: Solicitud) {
+        // Contrato verificado en la tabla real de Xano (nombres en singular).
+        // El propietario debe asignarse en Xano desde el usuario autenticado
+        // cuando se integre el login real; no inventar un ID en Android.
         val datos = JSONObject()
-            .put("tipo_producto", solicitud.tipoProducto.name)
-            .put("superficie_hectareas", solicitud.superficieHectareas)
-            .put("tiene_agua", solicitud.tieneAgua)
+            .put("producto", solicitud.tipoProducto.name)
+            .put("hectareas", solicitud.superficieHectareas)
+            .put("agua", solicitud.tieneAgua)
             .put("horario", solicitud.horario.name)
-            .put("obstaculos", JSONArray(solicitud.obstaculos))
+            .put("obstaculos", solicitud.obstaculos.joinToString(", "))
             .put("comentarios", solicitud.comentarios)
-            .put("estado", "PENDIENTE")
+            .put("estado", "pendiente")
+        // El POST y el GET se verifican por separado para no confundir sus errores.
         solicitarXano("POST", "solicitud", datos)
-        cargarDesdeXano()
     }
 
     fun buscar(id: Int): Solicitud? = solicitudes.firstOrNull { it.id == id }
@@ -90,48 +113,60 @@ class RepositorioSolicitudes {
     }
 
     private fun convertirSolicitud(registro: JSONObject): Solicitud {
-        val producto = registro.optString("tipo_producto")
-            .ifBlank { registro.optString("producto") }
-            .ifBlank { registro.optString("tipo") }
+        val id = registro.getInt("id")
+        val producto = registro.optString("producto")
+            .ifBlank { registro.optString("tipo_producto") }
         val tipo = when {
             producto.contains("GRAN", ignoreCase = true) -> TipoProducto.GRANULADA
             producto.contains("LIQ", ignoreCase = true) -> TipoProducto.LIQUIDA
-            else -> throw IllegalStateException(
-                "La solicitud ${registro.optInt("id")} no contiene un tipo de producto reconocido. " +
-                        "Revisa los campos que devuelve GET /solicitud."
-            )
+            else -> throw IllegalStateException("Producto no reconocido: '$producto'")
         }
-        val superficie = when {
-            registro.has("superficie_hectareas") -> registro.optInt("superficie_hectareas")
-            registro.has("superficie") -> registro.optInt("superficie")
-            registro.has("hectareas") -> registro.optInt("hectareas")
-            else -> throw IllegalStateException(
-                "Falta superficie_hectareas en la solicitud ${registro.optInt("id")}."
-            )
+
+        // Xano almacena decimales, mientras que el modelo actual usa Int.
+        // Se redondea solo para visualización hasta adaptar el modelo a Double.
+        val hectareas = when {
+            registro.has("hectareas") -> registro.optDouble("hectareas", Double.NaN)
+            registro.has("superficie_hectareas") -> registro.optDouble("superficie_hectareas", Double.NaN)
+            else -> Double.NaN
         }
-        if (superficie <= 0) throw IllegalStateException("La superficie de Xano debe ser mayor que cero")
+        if (!hectareas.isFinite() || hectareas <= 0.0 || hectareas > 100000.0) {
+            throw IllegalStateException("Hectáreas inválidas: $hectareas")
+        }
+
         val horarioTexto = registro.optString("horario")
-            .ifBlank { registro.optString("aplicacion") }
-        val horario = if (horarioTexto.contains("NOCT", ignoreCase = true)) {
-            HorarioAplicacion.NOCTURNA
-        } else HorarioAplicacion.DIURNA
-        val estadoTexto = registro.optString("estado")
-            .uppercase().replace(" ", "_")
-        val estado = when (estadoTexto) {
-            "CON_OFERTAS" -> EstadoSolicitud.CON_OFERTAS
-            "FINALIZADA" -> EstadoSolicitud.FINALIZADA
-            else -> EstadoSolicitud.PENDIENTE
+        val horario = when {
+            horarioTexto.contains("NOCT", ignoreCase = true) -> HorarioAplicacion.NOCTURNA
+            horarioTexto.contains("DIUR", ignoreCase = true) -> HorarioAplicacion.DIURNA
+            else -> throw IllegalStateException("Horario no reconocido: '$horarioTexto'")
         }
-        val lista = registro.optJSONArray("obstaculos") ?: JSONArray()
-        val obstaculos = (0 until lista.length()).map { lista.optString(it) }
-        val agua = if (registro.has("tiene_agua")) registro.optBoolean("tiene_agua")
-        else registro.optBoolean("tieneAgua")
+
+        val estadoTexto = registro.optString("estado")
+            .trim().uppercase().replace(" ", "_")
+        val estado = when (estadoTexto) {
+            "PENDIENTE" -> EstadoSolicitud.PENDIENTE
+            "CON_OFERTAS" -> EstadoSolicitud.CON_OFERTAS
+            "FINALIZADA", "COMPLETADA", "ACEPTADA" -> EstadoSolicitud.FINALIZADA
+            else -> throw IllegalStateException("Estado no reconocido: '$estadoTexto'")
+        }
+
+        val listaObstaculos = registro.optJSONArray("obstaculos")
+        val obstaculos = if (listaObstaculos != null) {
+            (0 until listaObstaculos.length())
+                .map { listaObstaculos.optString(it) }
+                .filter { it.isNotBlank() }
+        } else {
+            registro.optString("obstaculos")
+                .split(',', ';', '\n')
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+        }
 
         return Solicitud(
-            id = registro.getInt("id"),
+            id = id,
             tipoProducto = tipo,
-            superficieHectareas = superficie,
-            tieneAgua = agua,
+            superficieHectareas = hectareas.roundToInt(),
+            tieneAgua = if (registro.has("agua")) registro.optBoolean("agua")
+            else registro.optBoolean("tiene_agua"),
             horario = horario,
             obstaculos = obstaculos,
             comentarios = registro.optString("comentarios"),

@@ -128,8 +128,20 @@ class TecMundoViewModel : ViewModel() {
                 )
                 historial.clear()
                 pantallaActual = Pantalla.INICIO_PRODUCTOR
+
+                // No volver a publicar si falla la lectura de registros anteriores.
+                try {
+                    repositorio.cargarDesdeXano()
+                } catch (error: Exception) {
+                    mensajeErrorXano =
+                        "Xano respondió correctamente al POST, pero no fue posible " +
+                                "actualizar la lista de solicitudes: ${error.message}. " +
+                                "Comprueba el registro en Xano antes de volver a publicar."
+                }
             } catch (error: Exception) {
-                mensajeErrorXano = error.message ?: "No se pudo guardar en Xano"
+                mensajeErrorXano =
+                    "No se confirmó la publicación: ${error.message}. " +
+                            "Comprueba Xano antes de volver a intentar."
             } finally {
                 guardandoSolicitud = false
             }
