@@ -8,9 +8,12 @@ import com.Duoc.TecnoApp.example.TecnoApp.ui.NavegacionAplicacion
 import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.TecnoAppTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
+
         setContent {
             TecnoAppTheme {
                 NavegacionAplicacion()
