@@ -65,7 +65,7 @@ app/src/main/java/com/Duoc/TecnoApp/example/TecnoApp/
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/USUARIO/REPOSITORIO.git
+   git clone https://github.com/KevinAguileras/Proyecto-AppMoviles.git
    ```
 2. Abre la carpeta del proyecto en **Android Studio**.
 3. Espera a que Gradle sincronice (**Sync Now**).
