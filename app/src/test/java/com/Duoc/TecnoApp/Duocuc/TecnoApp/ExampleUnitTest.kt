@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp
+package com.Duoc.TecnoApp.Duocuc.TecnoApp
 
 import org.junit.Test
 

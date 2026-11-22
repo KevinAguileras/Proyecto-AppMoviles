@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.model
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.model
 
 import java.text.NumberFormat
 import java.util.Locale

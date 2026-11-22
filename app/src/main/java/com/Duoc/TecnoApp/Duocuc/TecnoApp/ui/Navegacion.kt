@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -6,8 +6,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.Duoc.TecnoApp.example.TecnoApp.model.*
-import com.Duoc.TecnoApp.example.TecnoApp.viewmodel.TecMundoViewModel
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.viewmodel.TecMundoViewModel
 
 // Controlador central de las ocho pantallas y de la barra inferior.
 @Composable

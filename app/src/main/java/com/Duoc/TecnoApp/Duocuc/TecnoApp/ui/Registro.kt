@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,11 +9,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.Duoc.TecnoApp.example.TecnoApp.model.Rol
-import com.Duoc.TecnoApp.example.TecnoApp.model.Usuario
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.VerdePrincipal
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Rol
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Usuario
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.VerdePrincipal
 
 @Composable
 fun PantallaRegistro(

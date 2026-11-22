@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.Duoc.TecnoApp.example.TecnoApp"
+    namespace = "com.duoc.tecnoapp.DuocUc.tecnoapp"
     compileSdk {
         version = release(37) {
             minorApiLevel = 1
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.Duoc.TecnoApp.example.TecnoApp"
+        applicationId = "com.duoc.tecnoapp.DuocUc.tecnoapp"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

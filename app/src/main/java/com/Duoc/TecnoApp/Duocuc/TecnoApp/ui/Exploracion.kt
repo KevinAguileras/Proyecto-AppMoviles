@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.Duoc.TecnoApp.example.TecnoApp.model.*
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.VerdeAcento
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.VerdeAcento
 
 @Composable
 fun PantallaExploracion(solicitudes: List<Solicitud>, alCotizar: (Int) -> Unit) {

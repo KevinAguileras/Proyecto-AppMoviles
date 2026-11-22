@@ -1,11 +1,11 @@
-package com.Duoc.TecnoApp.example.TecnoApp
+package com.Duoc.TecnoApp.Duocuc.TecnoApp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.Duoc.TecnoApp.example.TecnoApp.ui.NavegacionAplicacion
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.TecnoAppTheme
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.NavegacionAplicacion
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.TecnoAppTheme
 
 class MainActivity : ComponentActivity() {
 

@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
-import com.Duoc.TecnoApp.example.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
 
 private val opcionesObstaculos = listOf("Antenas", "Cables", "Torres de alta tensión", "Árboles nativos")
 

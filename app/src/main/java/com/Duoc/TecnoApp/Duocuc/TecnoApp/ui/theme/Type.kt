@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui.theme
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

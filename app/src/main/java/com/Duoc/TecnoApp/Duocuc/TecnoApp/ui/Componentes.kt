@@ -1,10 +1,9 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -18,11 +17,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.Duoc.TecnoApp.example.TecnoApp.model.*
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.*
 
 @Composable
 fun TituloPantalla(texto: String, accion: (@Composable () -> Unit)? = null) {

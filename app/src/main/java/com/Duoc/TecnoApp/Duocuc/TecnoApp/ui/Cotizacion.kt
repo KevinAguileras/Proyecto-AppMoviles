@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
@@ -12,8 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
-import com.Duoc.TecnoApp.example.TecnoApp.model.*
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.VerdeAcento
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.VerdeAcento
 
 @Composable
 fun PantallaCotizacion(solicitud: Solicitud, alOfertar: (Long) -> Boolean) {

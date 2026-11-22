@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.viewmodel
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -7,12 +7,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import com.Duoc.TecnoApp.example.TecnoApp.model.*
-import com.Duoc.TecnoApp.example.TecnoApp.repository.RepositorioSolicitudes
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.repository.RepositorioSolicitudes
 
 class TecMundoViewModel : ViewModel() {
     private val repositorio = RepositorioSolicitudes()
     private val historial = mutableStateListOf<Pantalla>()
+
+    private var ingresando = false
     val solicitudes get() = repositorio.solicitudes
 
     var mensajeErrorXano by mutableStateOf<String?>(null)
@@ -82,9 +84,29 @@ class TecMundoViewModel : ViewModel() {
 
     // La autenticación es demostrativa: no se envían contraseñas a un servidor.
     fun iniciarSesion(correo: String, contrasena: String) {
-        if (correo.isBlank() || contrasena.isBlank()) return
-        sesionIniciada = true
-        irAInicio()
+        if (ingresando) return
+
+        if (correo.isBlank() || contrasena.isBlank()) {
+            mensajeErrorXano = "Ingresa tu correo y contraseña."
+            return
+        }
+
+        ingresando = true
+        mensajeErrorXano = null
+
+        viewModelScope.launch {
+            try {
+                repositorio.iniciarSesion(correo, contrasena)
+                sesionIniciada = true
+                irAInicio()
+            } catch (error: kotlinx.coroutines.CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                mensajeErrorXano = error.message ?: "No se pudo iniciar sesión."
+            } finally {
+                ingresando = false
+            }
+        }
     }
 
     fun registrarUsuario(usuario: Usuario, rol: Rol) {
@@ -100,7 +122,9 @@ class TecMundoViewModel : ViewModel() {
     }
 
     fun cerrarSesion() {
+        repositorio.cerrarSesion()
         sesionIniciada = false
+        mensajeErrorXano = null
         historial.clear()
         pantallaActual = Pantalla.ACCESO
     }

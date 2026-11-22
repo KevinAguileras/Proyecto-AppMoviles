@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,11 +14,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.VerdePrincipal
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.VerdePrincipal
 
 @Composable
 fun PantallaLogin(alIniciarSesion: (String, String) -> Unit, alCrearCuenta: () -> Unit) {
-    var usuario by rememberSaveable { mutableStateOf("productor@tecmundo.test") }
+    var usuario by rememberSaveable { mutableStateOf("ke.aguileras@duocuc.cl") }
     var contrasena by rememberSaveable { mutableStateOf("") }
     var recordarSesion by rememberSaveable { mutableStateOf(false) }
     var aceptaTerminos by rememberSaveable { mutableStateOf(false) }

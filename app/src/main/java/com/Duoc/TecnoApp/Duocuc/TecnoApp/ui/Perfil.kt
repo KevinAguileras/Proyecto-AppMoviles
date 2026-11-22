@@ -1,4 +1,4 @@
-package com.Duoc.TecnoApp.example.TecnoApp.ui
+package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import android.content.ActivityNotFoundException
 import android.graphics.Bitmap
@@ -25,9 +25,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
-import com.Duoc.TecnoApp.example.TecnoApp.model.Rol
-import com.Duoc.TecnoApp.example.TecnoApp.model.Usuario
-import com.Duoc.TecnoApp.example.TecnoApp.ui.theme.VerdeClaro
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Rol
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Usuario
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.VerdeClaro
 import java.io.File
 
 // Lee la foto guardada y corrige la rotación que registra la cámara.
