@@ -1,15 +1,24 @@
 package com.Duoc.TecnoApp.Duocuc.TecnoApp.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.*
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Pantalla
+import com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Rol
 import com.Duoc.TecnoApp.Duocuc.TecnoApp.viewmodel.TecMundoViewModel
 
-// Controlador central de las ocho pantallas y de la barra inferior.
 @Composable
 fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
     val pantalla = vistaModelo.pantallaActual
@@ -21,18 +30,34 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
     }
 
     vistaModelo.mensajeErrorXano?.let { mensaje ->
+
+        val esRegistroExitoso =
+            mensaje.startsWith("¡Cuenta creada exitosamente!")
+
+        val titulo = when {
+            esRegistroExitoso ->
+                "Registro exitoso"
+
+            mensaje == "Correo o contraseña incorrectos." ->
+                "No se pudo iniciar sesión"
+
+            mensaje.startsWith("Xano respondió correctamente al POST") ->
+                "Solicitud enviada. Falta actualizar la lista"
+
+            else ->
+                "Problema al comunicarse con Xano"
+        }
+
         AlertDialog(
             onDismissRequest = vistaModelo::cerrarErrorXano,
-            title = {
-                Text(
-                    if (mensaje.startsWith("Xano respondió correctamente al POST"))
-                        "Solicitud enviada; falta actualizar la lista"
-                    else "Problema al comunicarse con Xano"
-                )
-            },
+            title = { Text(titulo) },
             text = { Text(mensaje) },
             confirmButton = {
-                TextButton(onClick = vistaModelo::cerrarErrorXano) { Text("Entendido") }
+                TextButton(
+                    onClick = vistaModelo::cerrarErrorXano
+                ) {
+                    Text("Entendido")
+                }
             }
         )
     }
@@ -41,14 +66,32 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
         AlertDialog(
             onDismissRequest = { mostrarInfo = false },
             title = { Text("Acerca de TecMundo Connect") },
-            text = { Text("Plataforma de demostración que conecta productores agrícolas con aplicadores. Puedes cambiar de vista para probar ambos roles.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    mostrarInfo = false
-                    vistaModelo.cambiarRol(if (vistaModelo.rolActivo == Rol.PRODUCTOR) Rol.APLICADOR else Rol.PRODUCTOR)
-                }) { Text("Cambiar de vista") }
+            text = {
+                Text(
+                    "Plataforma de demostración que conecta productores agrícolas con " +
+                            "aplicadores. Puedes cambiar de vista para probar ambos roles."
+                )
             },
-            dismissButton = { TextButton(onClick = { mostrarInfo = false }) { Text("Cerrar") } }
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarInfo = false
+                        val nuevoRol = if (vistaModelo.rolActivo == Rol.PRODUCTOR) {
+                            Rol.APLICADOR
+                        } else {
+                            Rol.PRODUCTOR
+                        }
+                        vistaModelo.cambiarRol(nuevoRol)
+                    }
+                ) {
+                    Text("Cambiar de vista")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarInfo = false }) {
+                    Text("Cerrar")
+                }
+            }
         )
     }
 
@@ -64,28 +107,40 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
             }
         }
     ) { margenes ->
-        Box(Modifier.fillMaxSize().padding(margenes)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(margenes)
+        ) {
             when (pantalla) {
                 Pantalla.ACCESO -> PantallaLogin(
                     alIniciarSesion = vistaModelo::iniciarSesion,
                     alCrearCuenta = { vistaModelo.navegar(Pantalla.REGISTRO) }
                 )
+
                 Pantalla.REGISTRO -> PantallaRegistro(
                     rolActual = vistaModelo.rolActivo,
                     alCambiarRol = vistaModelo::cambiarRol,
                     alRegistrarse = vistaModelo::registrarUsuario,
                     alVolver = { vistaModelo.volver() }
                 )
+
                 Pantalla.INICIO_PRODUCTOR -> PantallaInicioProductor(
                     solicitudes = vistaModelo.solicitudes,
                     alNuevaSolicitud = { vistaModelo.navegar(Pantalla.NUEVA_SOLICITUD) },
-                    alVerSolicitud = { vistaModelo.seleccionarSolicitud(it, Pantalla.DETALLE_PRODUCTOR) }
-                )
-                Pantalla.NUEVA_SOLICITUD -> PantallaNuevaSolicitud(
-                    alPublicar = { tipo, hectareas, agua, horario, obstaculos, comentario, fotos ->
-                        vistaModelo.crearSolicitud(tipo, hectareas, agua, horario, obstaculos, comentario, fotos)
+                    alVerSolicitud = { id ->
+                        vistaModelo.seleccionarSolicitud(id, Pantalla.DETALLE_PRODUCTOR)
                     }
                 )
+
+                Pantalla.NUEVA_SOLICITUD -> PantallaNuevaSolicitud(
+                    alPublicar = { tipo, hectareas, agua, horario, obstaculos, comentario, fotos ->
+                        vistaModelo.crearSolicitud(
+                            tipo, hectareas, agua, horario, obstaculos, comentario, fotos
+                        )
+                    }
+                )
+
                 Pantalla.DETALLE_PRODUCTOR -> {
                     val solicitud = vistaModelo.solicitudSeleccionada
                     if (solicitud != null) {
@@ -98,10 +153,14 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
                         Text("Solicitud no encontrada")
                     }
                 }
+
                 Pantalla.INICIO_APLICADOR -> PantallaExploracion(
                     solicitudes = vistaModelo.solicitudes,
-                    alCotizar = { vistaModelo.seleccionarSolicitud(it, Pantalla.COTIZACION) }
+                    alCotizar = { id ->
+                        vistaModelo.seleccionarSolicitud(id, Pantalla.COTIZACION)
+                    }
                 )
+
                 Pantalla.COTIZACION -> {
                     val solicitud = vistaModelo.solicitudSeleccionada
                     if (solicitud != null) {
@@ -110,11 +169,17 @@ fun NavegacionAplicacion(vistaModelo: TecMundoViewModel = viewModel()) {
                         Text("Solicitud no encontrada")
                     }
                 }
+
                 Pantalla.PERFIL -> PantallaPerfil(
                     usuario = vistaModelo.usuarioActual,
                     rol = vistaModelo.rolActivo,
                     alCambiarRol = {
-                        vistaModelo.cambiarRol(if (vistaModelo.rolActivo == Rol.PRODUCTOR) Rol.APLICADOR else Rol.PRODUCTOR)
+                        val nuevoRol = if (vistaModelo.rolActivo == Rol.PRODUCTOR) {
+                            Rol.APLICADOR
+                        } else {
+                            Rol.PRODUCTOR
+                        }
+                        vistaModelo.cambiarRol(nuevoRol)
                     },
                     alCerrarSesion = vistaModelo::cerrarSesion
                 )

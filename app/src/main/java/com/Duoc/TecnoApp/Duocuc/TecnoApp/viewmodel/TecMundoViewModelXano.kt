@@ -109,12 +109,54 @@ class TecMundoViewModel : ViewModel() {
         }
     }
 
-    fun registrarUsuario(usuario: Usuario, rol: Rol) {
-        usuarioActual = usuario
-        rolActivo = rol
-        sesionIniciada = true
-        irAInicio()
+
+    fun registrarUsuario(
+        usuario: Usuario,
+        rol: Rol,
+        contrasena: String
+    ) {
+        if (ingresando) return
+
+        ingresando = true
+        mensajeErrorXano = null
+
+        viewModelScope.launch {
+            try {
+                // Registrar el usuario en Xano
+                repositorio.registrarEnXano(
+                    usuario,
+                    rol,
+                    contrasena
+                )
+
+                // Guardar los datos básicos del usuario
+                usuarioActual = usuario
+                rolActivo = rol
+
+                // No iniciar sesión automáticamente
+                sesionIniciada = false
+
+                // Limpiar historial y volver al login
+                historial.clear()
+                pantallaActual = Pantalla.ACCESO
+
+                // Mensaje de registro exitoso
+                mensajeErrorXano =
+                    "¡Cuenta creada exitosamente! Ahora inicia sesión."
+
+            } catch (error: kotlinx.coroutines.CancellationException) {
+                throw error
+
+            } catch (error: Exception) {
+                mensajeErrorXano =
+                    error.message ?: "No se pudo registrar la cuenta."
+
+            } finally {
+                ingresando = false
+            }
+        }
     }
+
 
     fun cambiarRol(rol: Rol) {
         rolActivo = rol

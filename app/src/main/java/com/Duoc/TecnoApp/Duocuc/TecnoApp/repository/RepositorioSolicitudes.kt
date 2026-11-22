@@ -38,6 +38,26 @@ class RepositorioSolicitudes {
 
         tokenSesion = token
     }
+    suspend fun registrarEnXano(
+        usuario: com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Usuario,
+        rol: com.Duoc.TecnoApp.Duocuc.TecnoApp.model.Rol,
+        contrasena: String
+    ) {
+        val datos = JSONObject()
+            .put("email", usuario.correo.trim().lowercase())
+            .put("password", contrasena)
+            .put("nombre", usuario.nombre)
+            .put("apellido", usuario.apellido)
+            .put("rut", usuario.rut)
+            .put("telefono", usuario.telefono)
+            .put("rol", rol.name)
+
+        enviarPeticion(
+            metodo = "POST",
+            direccion = ConfiguracionXano.URL_REGISTRO,
+            datos = datos
+        )
+    }
 
     fun cerrarSesion() {
         tokenSesion = null
@@ -101,6 +121,10 @@ class RepositorioSolicitudes {
             }.orEmpty()
 
             if (estado !in 200..299) {
+                if (direccion == ConfiguracionXano.URL_LOGIN && (estado == 401 || estado == 403)) {
+                    throw IllegalStateException("Correo o contraseña incorrectos.")
+                }
+
                 throw IllegalStateException("Xano respondió HTTP $estado: ${respuesta.take(300)}")
             }
 

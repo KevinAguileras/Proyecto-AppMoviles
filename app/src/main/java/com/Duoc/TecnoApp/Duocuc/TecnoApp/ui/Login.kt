@@ -18,7 +18,7 @@ import com.Duoc.TecnoApp.Duocuc.TecnoApp.ui.theme.VerdePrincipal
 
 @Composable
 fun PantallaLogin(alIniciarSesion: (String, String) -> Unit, alCrearCuenta: () -> Unit) {
-    var usuario by rememberSaveable { mutableStateOf("ke.aguileras@duocuc.cl") }
+    var usuario by rememberSaveable { mutableStateOf("") }
     var contrasena by rememberSaveable { mutableStateOf("") }
     var recordarSesion by rememberSaveable { mutableStateOf(false) }
     var aceptaTerminos by rememberSaveable { mutableStateOf(false) }
@@ -52,16 +52,20 @@ fun PantallaLogin(alIniciarSesion: (String, String) -> Unit, alCrearCuenta: () -
         Text("Iniciar sesión", fontWeight = FontWeight.Bold, fontSize = 19.sp)
         Spacer(Modifier.height(16.dp))
 
-        CampoFormulario(
-            texto = usuario,
-            alCambiar = {
+        OutlinedTextField(
+            value = usuario,
+            onValueChange = {
                 usuario = it
                 if (usuario.isBlank() || contrasena.isBlank()) {
                     recordarSesion = false
                     aceptaTerminos = false
                 }
             },
-            etiqueta = "Correo o usuario"
+            label = { Text("Correo") },
+            placeholder = { Text("Correo") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp)
         )
         Spacer(Modifier.height(9.dp))
         OutlinedTextField(
