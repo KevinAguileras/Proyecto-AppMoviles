@@ -43,11 +43,11 @@ fun PantallaLogin(alIniciarSesion: (String, String) -> Unit, alCrearCuenta: () -
         verticalArrangement = Arrangement.Center
     ) {
         Surface(shape = RoundedCornerShape(15.dp), color = VerdePrincipal) {
-            Text("TM", modifier = Modifier.padding(18.dp), color = Color.White, fontWeight = FontWeight.Bold)
+            Text("AN", modifier = Modifier.padding(18.dp), color = Color.White, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.height(14.dp))
-        Text("TecMundo", fontWeight = FontWeight.ExtraBold, fontSize = 29.sp)
-        Text("Connect", color = VerdePrincipal, fontWeight = FontWeight.Bold, fontSize = 27.sp)
+        Text("AgroNova", fontWeight = FontWeight.ExtraBold, fontSize = 29.sp)
+        Text("Contigo", color = VerdePrincipal, fontWeight = FontWeight.Bold, fontSize = 27.sp)
         Spacer(Modifier.height(24.dp))
         Text("Iniciar sesión", fontWeight = FontWeight.Bold, fontSize = 19.sp)
         Spacer(Modifier.height(16.dp))
