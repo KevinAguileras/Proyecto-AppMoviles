@@ -1,3 +1,4 @@
+
 package com.Duoc.AgroNova.Duocuc.TecnoApp.viewmodel
 
 import androidx.compose.runtime.getValue
@@ -11,39 +12,63 @@ import com.Duoc.AgroNova.Duocuc.TecnoApp.model.*
 import com.Duoc.AgroNova.Duocuc.TecnoApp.repository.RepositorioSolicitudes
 
 class TecMundoViewModel : ViewModel() {
+
     private val repositorio = RepositorioSolicitudes()
     private val historial = mutableStateListOf<Pantalla>()
 
     private var ingresando = false
+
     val solicitudes get() = repositorio.solicitudes
 
     var mensajeErrorXano by mutableStateOf<String?>(null)
         private set
+
     var guardandoSolicitud by mutableStateOf(false)
         private set
 
-    fun cerrarErrorXano() { mensajeErrorXano = null }
+    // Aviso pendiente para mostrar una notificación.
+    var avisoPendiente by mutableStateOf<AvisoNotificacion?>(null)
+        private set
+
+    fun consumirAviso() {
+        avisoPendiente = null
+    }
+
+    fun cerrarErrorXano() {
+        mensajeErrorXano = null
+    }
 
     fun cargarSolicitudesXano() {
         viewModelScope.launch {
             try {
                 repositorio.cargarDesdeXano()
             } catch (error: Exception) {
-                mensajeErrorXano = error.message ?: "Error al consultar la base de datos Xano"
+                mensajeErrorXano =
+                    error.message ?: "Error al consultar la base de datos Xano"
             }
         }
     }
 
     var pantallaActual by mutableStateOf(Pantalla.ACCESO)
         private set
+
     var rolActivo by mutableStateOf(Rol.PRODUCTOR)
         private set
+
     var sesionIniciada by mutableStateOf(false)
         private set
+
     var usuarioActual by mutableStateOf(
-        Usuario("Martín", "Rojas", "99.123.456-K", "m.rojas@tecmundo.test", "+56 9 0000 1111")
+        Usuario(
+            "Martín",
+            "Rojas",
+            "99.123.456-K",
+            "m.rojas@tecmundo.test",
+            "+56 9 0000 1111"
+        )
     )
         private set
+
     var solicitudSeleccionadaId by mutableStateOf(1)
         private set
 
@@ -74,7 +99,10 @@ class TecMundoViewModel : ViewModel() {
     }
 
     fun inicioSegunRol(): Pantalla =
-        if (rolActivo == Rol.PRODUCTOR) Pantalla.INICIO_PRODUCTOR else Pantalla.INICIO_APLICADOR
+        if (rolActivo == Rol.PRODUCTOR)
+            Pantalla.INICIO_PRODUCTOR
+        else
+            Pantalla.INICIO_APLICADOR
 
     fun irAInicio() {
         historial.clear()
@@ -82,7 +110,7 @@ class TecMundoViewModel : ViewModel() {
         if (sesionIniciada) cargarSolicitudesXano()
     }
 
-    // La autenticación es demostrativa: no se envían contraseñas a un servidor.
+    // Inicio de sesión con Xano.
     fun iniciarSesion(correo: String, contrasena: String) {
         if (ingresando) return
 
@@ -97,19 +125,28 @@ class TecMundoViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 repositorio.iniciarSesion(correo, contrasena)
+
                 sesionIniciada = true
+
+                avisoPendiente = AvisoNotificacion(
+                    titulo = "Sesión iniciada",
+                    mensaje = "Bienvenido a AgroNova, ${usuarioActual.nombre}."
+                )
+
                 irAInicio()
+
             } catch (error: kotlinx.coroutines.CancellationException) {
                 throw error
             } catch (error: Exception) {
-                mensajeErrorXano = error.message ?: "No se pudo iniciar sesión."
+                mensajeErrorXano =
+                    error.message ?: "No se pudo iniciar sesión."
             } finally {
                 ingresando = false
             }
         }
     }
 
-
+    // Registro de usuario en Xano.
     fun registrarUsuario(
         usuario: Usuario,
         rol: Rol,
@@ -122,41 +159,39 @@ class TecMundoViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                // Registrar el usuario en Xano
                 repositorio.registrarEnXano(
                     usuario,
                     rol,
                     contrasena
                 )
 
-                // Guardar los datos básicos del usuario
                 usuarioActual = usuario
                 rolActivo = rol
 
-                // No iniciar sesión automáticamente
+                // El usuario deberá iniciar sesión manualmente.
                 sesionIniciada = false
 
-                // Limpiar historial y volver al login
                 historial.clear()
                 pantallaActual = Pantalla.ACCESO
 
-                // Mensaje de registro exitoso
+                avisoPendiente = AvisoNotificacion(
+                    titulo = "Cuenta creada",
+                    mensaje = "¡Bienvenido a AgroNova, ${usuario.nombre}! Ahora inicia sesión."
+                )
+
                 mensajeErrorXano =
                     "¡Cuenta creada exitosamente! Ahora inicia sesión."
 
             } catch (error: kotlinx.coroutines.CancellationException) {
                 throw error
-
             } catch (error: Exception) {
                 mensajeErrorXano =
                     error.message ?: "No se pudo registrar la cuenta."
-
             } finally {
                 ingresando = false
             }
         }
     }
-
 
     fun cambiarRol(rol: Rol) {
         rolActivo = rol
@@ -167,10 +202,12 @@ class TecMundoViewModel : ViewModel() {
         repositorio.cerrarSesion()
         sesionIniciada = false
         mensajeErrorXano = null
+        avisoPendiente = null
         historial.clear()
         pantallaActual = Pantalla.ACCESO
     }
 
+    // Publicar una nueva solicitud.
     fun crearSolicitud(
         tipo: TipoProducto,
         hectareas: Int,
@@ -181,21 +218,33 @@ class TecMundoViewModel : ViewModel() {
         fotos: List<String>
     ) {
         if (hectareas !in 1..100000 || guardandoSolicitud) return
+
         viewModelScope.launch {
             guardandoSolicitud = true
             mensajeErrorXano = null
+
             try {
                 repositorio.publicarEnXano(
                     Solicitud(
-                        id = 0, tipoProducto = tipo, superficieHectareas = hectareas,
-                        tieneAgua = tieneAgua, horario = horario,
-                        obstaculos = obstaculos, comentarios = comentarios, fotos = fotos
+                        id = 0,
+                        tipoProducto = tipo,
+                        superficieHectareas = hectareas,
+                        tieneAgua = tieneAgua,
+                        horario = horario,
+                        obstaculos = obstaculos,
+                        comentarios = comentarios,
+                        fotos = fotos
                     )
                 )
+
                 historial.clear()
                 pantallaActual = Pantalla.INICIO_PRODUCTOR
 
-                // No volver a publicar si falla la lectura de registros anteriores.
+                avisoPendiente = AvisoNotificacion(
+                    titulo = "Solicitud publicada",
+                    mensaje = "Tu solicitud se publicó correctamente en AgroNova."
+                )
+
                 try {
                     repositorio.cargarDesdeXano()
                 } catch (error: Exception) {
@@ -204,6 +253,7 @@ class TecMundoViewModel : ViewModel() {
                                 "actualizar la lista de solicitudes: ${error.message}. " +
                                 "Comprueba el registro en Xano antes de volver a publicar."
                 }
+
             } catch (error: Exception) {
                 mensajeErrorXano =
                     "No se confirmó la publicación: ${error.message}. " +
@@ -214,33 +264,53 @@ class TecMundoViewModel : ViewModel() {
         }
     }
 
-    // Una nueva oferta actualiza la solicitud y su estado en el repositorio.
+    // Enviar una oferta.
     fun enviarOferta(precioPorHectarea: Long): Boolean {
         val solicitud = solicitudSeleccionada ?: return false
-        if (solicitud.estado == EstadoSolicitud.FINALIZADA || precioPorHectarea <= 0L ||
-            precioPorHectarea > 1000000000L) return false
-        val proximoId = (solicitudes.flatMap { it.ofertas }.maxOfOrNull { it.id } ?: 0) + 1
+
+        if (
+            solicitud.estado == EstadoSolicitud.FINALIZADA ||
+            precioPorHectarea <= 0L ||
+            precioPorHectarea > 1000000000L
+        ) return false
+
+        val proximoId = (
+                solicitudes.flatMap { it.ofertas }
+                    .maxOfOrNull { it.id } ?: 0
+                ) + 1
+
         val nuevaOferta = Oferta(
             id = proximoId,
             nombreAplicador = "${usuarioActual.nombre} ${usuarioActual.apellido}",
             precioPorHectarea = precioPorHectarea,
             calificacion = usuarioActual.calificacion
         )
+
         repositorio.actualizar(
             solicitud.copy(
                 ofertas = solicitud.ofertas + nuevaOferta,
                 estado = EstadoSolicitud.CON_OFERTAS
             )
         )
+
         irAInicio()
         return true
     }
 
     fun aceptarOferta(idOferta: Int): Boolean {
         val solicitud = solicitudSeleccionada ?: return false
-        if (solicitud.estado == EstadoSolicitud.FINALIZADA ||
-            solicitud.ofertas.none { it.id == idOferta }) return false
-        repositorio.actualizar(solicitud.copy(estado = EstadoSolicitud.FINALIZADA))
+
+        if (
+            solicitud.estado == EstadoSolicitud.FINALIZADA ||
+            solicitud.ofertas.none { it.id == idOferta }
+        ) return false
+
+        repositorio.actualizar(
+            solicitud.copy(
+                estado = EstadoSolicitud.FINALIZADA
+            )
+        )
+
         return true
     }
 }

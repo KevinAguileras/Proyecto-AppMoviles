@@ -62,3 +62,7 @@ data class Solicitud(
 // Presentación de precios en pesos chilenos.
 fun formatearPesos(valor: Long): String =
     "$" + NumberFormat.getIntegerInstance(Locale.forLanguageTag("es-CL")).format(valor)
+data class AvisoNotificacion(
+    val titulo: String,
+    val mensaje: String
+)
